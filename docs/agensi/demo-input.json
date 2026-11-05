@@ -1,0 +1,21 @@
+{
+  "synthetic": true,
+  "schema_note": "Illustrative synthetic payload keys, not a promised Garmin response schema. Unit labels are explicit in this fixture. No real account or personal measurement was used.",
+  "prompt": "Summarize these three activities from the supplied synthetic connector result. Compare moving and elapsed time where available, and tell me what is missing. Do not access a live account.",
+  "tool": "garmin_list_activities",
+  "arguments": {"limit": 3, "offset": 0},
+  "result": {
+    "isError": false,
+    "structuredContent": {
+      "source": "Garmin Connect Personal API",
+      "retrieved_at": "2026-11-05T12:00:00+00:00",
+      "timezone": "Europe/Rome",
+      "data": [
+        {"activityId": 1003, "calendarDate": "2026-11-04", "activityType": "running", "distance": 6000, "distanceUnit": "metres", "movingDuration": 1860, "elapsedDuration": 1980, "durationUnit": "seconds"},
+        {"activityId": 1002, "calendarDate": "2026-11-03", "activityType": "lap_swimming", "distance": 1200, "distanceUnit": "metres", "movingDuration": 1440, "elapsedDuration": 2100, "durationUnit": "seconds"},
+        {"activityId": 1001, "calendarDate": "2026-11-02", "activityType": "strength_training", "elapsedDuration": 2700, "durationUnit": "seconds"}
+      ],
+      "notes": ["Synthetic demonstration only; not retrieved from a real Garmin account.", "Original field units are explicit in this fixture."]
+    }
+  }
+}

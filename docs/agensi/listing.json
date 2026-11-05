@@ -1,0 +1,33 @@
+{
+  "skill_name": "garmin-connect-mcp-assistant",
+  "name": "Garmin Connect MCP Assistant",
+  "version": "0.1.0",
+  "price_model": "free",
+  "summary": "Explore your Garmin activities and wellness trends with a read-only AI companion. Compare sessions, preserve units and flag missing data. Requires your own configured Garmin Connect MCP server; no account access or hosting is included.",
+  "categories": ["Productivity", "Data & Databases", "APIs & Backend"],
+  "tags": ["garmin", "mcp", "fitness-data", "activities", "read-only", "open-source"],
+  "keywords": ["Garmin Connect", "Personal API", "running", "swimming", "strength training", "sleep", "HRV", "Body Battery"],
+  "use_cases": [
+    "Summarize recent activities using the fields Garmin actually returns",
+    "Compare swimming sessions without confusing moving pace and elapsed pace",
+    "Review dated steps, weight or sleep trends and disclose missing measurements",
+    "Inspect associated workouts without inventing performed strength sets",
+    "Troubleshoot a missing connector or distinguish status from authentication"
+  ],
+  "needs_access_to": [
+    "A separately installed, configured instance of graiola/garmin-connect-mcp connected to the same AI agent",
+    "The user's own Garmin account and Garmin Connect Personal API access",
+    "A supported Agensi agent connection when loading this skill through Agensi"
+  ],
+  "compatibility_note": "The connector requires Python 3.11+ on the user's host. Documented setup targets Linux/macOS. Local clients can use stdio; authenticated loopback HTTP is also implemented. The intended agent must support the chosen connection and separately connect to Agensi. Compatibility with individual third-party agents has not yet been established by a live end-to-end test.",
+  "permissions_note": "The skill has no executable scripts or network client. It instructs the agent to use six read-only Garmin MCP tools. The separately operated connector contacts official Garmin endpoints. Garmin credentials stay on the connector host; returned data is processed by the connected AI service. Do not send measurements, credentials or activity notes to marketplace tools.",
+  "license": "MIT",
+  "repository_url": "https://github.com/graiola/garmin-connect-mcp",
+  "docs_url": "https://github.com/graiola/garmin-connect-mcp/blob/master/README.md",
+  "logo_path": "assets/icon.png",
+  "description_path": "docs/agensi/LISTING.md",
+  "demo_path": "docs/agensi/DEMO.md",
+  "author": "Gennaro Raiola",
+  "submission_status": "prepared_not_submitted",
+  "note": "Local preparation metadata, not an Agensi API payload. Review the actual submission form and select Free manually. No price, paid service, affiliate enrolment or publication is authorized by this file."
+}

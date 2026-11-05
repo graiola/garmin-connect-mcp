@@ -1,0 +1,220 @@
+[
+  {
+    "name": "garmin_list_activities",
+    "description": "Read a page of Garmin activities. Use offset/limit for pagination; stop when fewer than limit records are returned. Dates use the account's calendar dates. activity_type is Garmin's type key (e.g. running, lap_swimming, strength_training), not an exercise name. No inferred fitness conclusions.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "start_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Date"
+        },
+        "end_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Date"
+        },
+        "activity_type": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Activity Type"
+        },
+        "offset": {
+          "default": 0,
+          "maximum": 10000,
+          "minimum": 0,
+          "title": "Offset",
+          "type": "integer"
+        },
+        "limit": {
+          "default": 20,
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "title": "Activities",
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "garmin_get_activity",
+    "description": "Read the original Garmin summary/details for an activity ID from garmin_list_activities. Preserve units, elapsed versus moving time, and session structure. Do not infer swimming continuity from average pace.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 9223372036854775807,
+          "title": "Activity Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activity_id"
+      ],
+      "title": "Activity",
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "garmin_get_activity_workouts",
+    "description": "Read Garmin's workouts associated with an activity. Availability and schema vary: this is NOT a guarantee of executed sets, edited exercise names, reps or weights. Return only what the API supplies; do not invent missing strength records.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "exclusiveMinimum": 0,
+          "maximum": 9223372036854775807,
+          "title": "Activity Id",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "activity_id"
+      ],
+      "title": "Activity",
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "garmin_get_health_range",
+    "description": "Read weight (including BIA estimates if supplied), steps, stress, sleep summaries, HRV summaries, Body Battery, or daily summaries over at most 31 inclusive calendar days. Preserve original units; values are device estimates, not diagnoses or proof of muscle gain/loss.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "start_date": {
+          "format": "date",
+          "title": "Start Date",
+          "type": "string"
+        },
+        "end_date": {
+          "format": "date",
+          "title": "End Date",
+          "type": "string"
+        },
+        "metric": {
+          "enum": [
+            "weight",
+            "steps",
+            "stress",
+            "sleep",
+            "hrv",
+            "body_battery",
+            "daily_summary"
+          ],
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "start_date",
+        "end_date",
+        "metric"
+      ],
+      "title": "HealthRange",
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "garmin_get_day_detail",
+    "description": "Read original sleep, HRV or heart-rate data for one explicit calendar date. A missing measurement is not zero. HRV/heart rate alone cannot diagnose recovery or health.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "date": {
+          "format": "date",
+          "title": "Date",
+          "type": "string"
+        },
+        "metric": {
+          "enum": [
+            "sleep",
+            "hrv",
+            "heart_rate"
+          ],
+          "title": "Metric",
+          "type": "string"
+        }
+      },
+      "required": [
+        "date",
+        "metric"
+      ],
+      "title": "DayDetail",
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  },
+  {
+    "name": "garmin_connector_status",
+    "description": "Report connector capabilities and local date without contacting Garmin or revealing any key. This does not validate authentication or account coverage.",
+    "inputSchema": {
+      "additionalProperties": false,
+      "properties": {},
+      "title": "Empty",
+      "type": "object"
+    },
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": true
+    }
+  }
+]

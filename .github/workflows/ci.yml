@@ -2,6 +2,7 @@ name: Tests
 on:
   push:
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -19,3 +20,17 @@ jobs:
       - run: python -m compileall -q src
       - run: python -m pytest -q
       - run: bash -n scripts/publish_github.sh scripts/tunnel_stdio.sh
+      - run: python scripts/build_agensi_package.py --check
+      - run: python scripts/build_agensi_package.py
+      - name: Upload Agensi preparation bundle
+        if: matrix.python == '3.11'
+        uses: actions/upload-artifact@v7
+        with:
+          name: agensi-launch-bundle
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            dist/agensi/*.zip
+            dist/agensi/*.sha256
+            assets/icon.png
+            docs/agensi/

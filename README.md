@@ -9,9 +9,11 @@ supporting MCP over stdio and local Streamable HTTP. Built to help explore worko
 and fitness trends—not to diagnose medical conditions.
 
 **Status:** Implementation and synthetic local tests are available. The source is
-published at [graiola/garmin-connect-mcp](https://github.com/graiola/garmin-connect-mcp),
-but no live Garmin account, Secure MCP Tunnel, or ChatGPT connection has been
-verified. Never provide your Garmin API key in chat or commit it to the repository.
+published at [graiola/garmin-connect-mcp](https://github.com/graiola/garmin-connect-mcp).
+The maintainer reported a successful local `doctor` check on November 5, 2026
+(authentication and one activity read); this was not independently repeated here.
+A live agent/MCP, Secure MCP Tunnel or Agensi connection remains unverified.
+Never provide your Garmin API key in chat or commit it to the repository.
 
 ## Available tools
 
@@ -137,6 +139,36 @@ updates to this repository.
 Read [SECURITY.md](SECURITY.md), the [API contract](docs/API_CONTRACT.md), and
 the [verification record](docs/VERIFICATION.md). This is a single-user personal
 connector, not a multiuser or public health-data service.
+
+## Free companion skill and Agensi preparation
+
+[Garmin Connect MCP Assistant](skills/garmin-connect-mcp-assistant/SKILL.md) teaches
+an agent to use these six tools with bounded reads, explicit dates, missing-data
+handling and privacy safeguards. It is MIT-licensed and does not change the server.
+It does not include credentials, host a connector, install one automatically, or
+provide medical diagnoses or guaranteed performed strength sets.
+
+The skill source is available now. An Agensi listing is **prepared, not submitted
+or approved**. Users loading it there will still need their own configured Garmin
+MCP connection in the same agent. Compatibility with specific third-party clients
+must be verified by a real read; local mocked tests are not sufficient.
+
+Build the exact six-file, text-only upload package with Python 3.11+:
+
+```bash
+python scripts/build_agensi_package.py --check
+python scripts/build_agensi_package.py
+```
+
+The ZIP and SHA-256 checksum are written under `dist/agensi/`. After successful
+CI, the `agensi-launch-bundle` Actions artifact also contains the upload ZIP,
+existing 512 × 512 logo and prepared listing materials. Extract that outer artifact
+before uploading the inner skill ZIP; do not upload the whole repository.
+
+See the [launch guide](docs/agensi/LAUNCH.md),
+[listing description](docs/agensi/LISTING.md),
+[synthetic demonstration](docs/agensi/DEMO.md), and
+[acceptance checklist](docs/agensi/ACCEPTANCE.md).
 
 ## Acceptance prompts after connecting
 

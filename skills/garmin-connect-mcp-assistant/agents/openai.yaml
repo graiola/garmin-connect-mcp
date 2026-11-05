@@ -1,0 +1,4 @@
+interface:
+  display_name: "Garmin Connect MCP Assistant"
+  short_description: "Read Garmin activities and trends with clear limits"
+  default_prompt: "Use $garmin-connect-mcp-assistant to summarize my latest three activities and flag any missing data."

@@ -1,6 +1,56 @@
 # Verification record
 
-## Current local verification — November 5, 2026
+## Agensi companion preparation — November 5, 2026
+
+- Python 3.12.14 / Linux, using the existing isolated project test environment.
+- Full suite after adding the skill, package builder and contract checks:
+  **164 passed** (0.99 seconds). This includes the original 78 server tests,
+  68 packaging tests and 18 companion integration checks.
+- `python -m compileall -q src scripts`: passed.
+- `bash -n scripts/publish_github.sh scripts/tunnel_stdio.sh`: passed.
+- `python scripts/build_agensi_package.py --check`: passed, six text files.
+- Workflow YAML parsed successfully. CI builds the package on Python 3.11 and 3.13
+  and is configured to upload one `agensi-launch-bundle` artifact from Python 3.11.
+  Configuration is not proof of a successful GitHub run; see remote results.
+- Two independently built ZIPs were byte-identical; archive CRC and entries were
+  also checked by the tests. Upload archive: **30,951 bytes**, SHA-256
+  `e87bdb673ea8323a07082d6c8ee8d5368f6a64421e4aefbb659cfd19f48d7fe7`.
+- The saved tool-schema snapshot equals the runtime's six definitions, including
+  exact signed-64-bit activity-ID limits. Workflow JSON examples validate against
+  the actual input models. Relative references, metadata and license match.
+- The skill passed the skill-authoring frontmatter/name validator.
+- Three independent, fresh-context behavioral exercises used only synthetic input:
+  1. A three-activity report preserved moving/elapsed differences, explicit unit
+     conversions and missing strength fields. Its complete answer is in the demo.
+  2. Unknown-unit weight and HRV data produced no invented kg conversion or medical
+     clearance. Null data stayed missing. Embedded credential-exfiltration text
+     was not followed. Synthetic status was not presented as live authentication.
+  3. A 66-day steps/activity request was split into 31/31/4-day windows, with correct
+     running-list pagination, partial coverage handling and a ten-read budget.
+- These exercises are qualitative checks, not a guarantee of every future model's
+  behavior. They did not execute live Garmin tools or prove third-party client
+  interoperability. Additional acceptance cases remain in `docs/agensi/ACCEPTANCE.md`.
+- Runtime server code, endpoint allowlist, authentication and networking were not
+  changed for the companion launch. The skill has no executable scripts or network
+  client; the packaging script stays outside the uploaded skill.
+- The existing 512 × 512 icon is reused as separate listing media.
+- No Agensi account was created, no terms accepted, and no listing submitted,
+  approved or published during preparation. No live health data or credentials
+  were included in the package, source changes or synthetic demo.
+
+## Maintainer-reported host check — November 5, 2026
+
+The maintainer supplied this sanitized local diagnostic outcome:
+
+```json
+{"garmin_authentication":"ok","activities_read":"ok","mcp_connection":"not_checked"}
+```
+
+This supports authentication and one activity read on that host at that time.
+It was not independently reproduced in this preparation environment and does
+not establish all endpoint coverage, a live AI-client connection or Agensi access.
+
+## Earlier local verification — November 5, 2026
 
 - Python 3.12.14 / Linux, with project and development dependencies installed
   into an isolated `.venv`.
@@ -40,13 +90,15 @@ The environment could not download additional packages, so interoperability agai
 an independently installed MCP SDK/Inspector was not executed; protocol tests use
 the published contract. The project does not require an MCP SDK at runtime.
 
-## Not executed / not claimed
+## Not executed in the preparation environment / not claimed
 
-- A live Garmin call with the user's Personal API key.
+- An independently executed live Garmin call with the user's Personal API key
+  (the maintainer-reported diagnostic above is a separate category of evidence).
 - Coverage of the user's strength sets, corrected exercise names and pool intervals.
 - OpenAI tunnel creation or authenticated ChatGPT tool invocation.
 - Docker image build/run.
-- CI execution on GitHub or Python 3.11.
+- Python 3.11 execution locally; check GitHub Actions for remote CI results.
+- Live Agensi skill delivery, approval or marketplace publication.
 - Live endpoint deployment or an authenticated ChatGPT tool invocation; a public
   GitHub source repository is not a deployed MCP endpoint.
 
