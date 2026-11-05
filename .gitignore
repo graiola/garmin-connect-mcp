@@ -1,0 +1,25 @@
+# Credentials and local data must never be committed.
+.env
+.env.*
+!.env.example
+secrets/
+data/
+exports/
+*.fit
+*.FIT
+*.tcx
+*.gpx
+*.db
+*.sqlite*
+*api-key*
+*token-cache*
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.log
