@@ -7,6 +7,7 @@ from datetime import date, datetime, timezone
 from typing import Literal
 from zoneinfo import ZoneInfo
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from . import __version__
 from .client import GarminClient
 from .errors import ConnectorError
 
@@ -148,7 +149,7 @@ class ToolService:
 
     async def _execute(self, name: str, args: Input) -> object:
         if name == "garmin_connector_status":
-            return {"version": "0.1.0", "read_only": True, "garmin_authenticated": "not_checked",
+            return {"version": __version__, "read_only": True, "garmin_authenticated": "not_checked",
                     "today": datetime.now(ZoneInfo(self.client.settings.timezone)).date().isoformat(),
                     "tools": [t.name for t in TOOLS], "fit_decoding": False}
         if isinstance(args, Activities):

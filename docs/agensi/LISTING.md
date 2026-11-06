@@ -5,6 +5,10 @@ activities and available wellness data through Gennaro Raiola's read-only
 [Garmin Connect MCP](https://github.com/graiola/garmin-connect-mcp).
 
 **Requires your own configured Garmin MCP server, connected to the same agent.**
+
+The server's guided `setup` checks your key and prints local client settings.
+Garmin's temporary access tokens are managed automatically. Your key is entered
+only in your own terminal; installing this skill does not connect the server for you.
 This listing supplies the companion skill, not server hosting, installation,
 Garmin credentials or an account connection.
 

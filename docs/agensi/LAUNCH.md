@@ -1,6 +1,6 @@
 # Agensi launch guide
 
-Product: **Garmin Connect MCP Assistant** · Version **0.1.0** · Price **Free**
+Product: **Garmin Connect MCP Assistant** · Version **0.2.0** · Price **Free**
 
 Status: source, listing copy and an upload-package builder are prepared. No Agensi
 account, draft, submission, approval or live marketplace installation is claimed.
@@ -25,7 +25,7 @@ Open the repository's **Actions → Tests** workflow and select a successful run
 the intended commit. Download `agensi-launch-bundle` from its artifacts section.
 Extract the outer artifact. It contains:
 
-- `dist/agensi/garmin-connect-mcp-assistant-0.1.0.zip`: the actual skill upload.
+- `dist/agensi/garmin-connect-mcp-assistant-0.2.0.zip`: the actual skill upload.
 - Its `.zip.sha256` checksum.
 - `assets/icon.png`: the existing square 512 × 512 logo, uploaded separately.
 - `docs/agensi/`: listing copy, metadata, synthetic example and acceptance guide.
@@ -72,7 +72,7 @@ payload; do not send it to an invented endpoint.
 |---|---|
 | Name | Garmin Connect MCP Assistant |
 | Pricing | Free |
-| Version, if offered | 0.1.0 |
+| Version, if offered | 0.2.0 |
 | Summary | `summary` in [listing.json](listing.json), under 300 characters |
 | Description | Complete [LISTING.md](LISTING.md) |
 | Logo | `assets/icon.png` from the repository, uploaded separately |

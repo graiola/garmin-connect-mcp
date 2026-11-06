@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import logging
 from pydantic import ValidationError
+from . import __version__
 from .errors import ConnectorError
 from .tools import ToolService
 
@@ -50,7 +51,7 @@ class Protocol:
                 return error(request_id, -32602, "initialize requires protocolVersion, capabilities and clientInfo.")
             result = {"protocolVersion": requested if requested in VERSIONS else VERSIONS[0],
                       "capabilities": {"tools": {"listChanged": False}},
-                      "serverInfo": {"name": "garmin-connect-mcp", "version": "0.1.0"},
+                      "serverInfo": {"name": "garmin-connect-mcp", "version": __version__},
                       "instructions": INSTRUCTIONS}
         elif method == "ping":
             result = {}

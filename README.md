@@ -8,12 +8,68 @@ A personal, **read-only** MCP connector for the official Garmin Connect Personal
 supporting MCP over stdio and local Streamable HTTP. Built to help explore workouts
 and fitness trends—not to diagnose medical conditions.
 
-**Status:** Implementation and synthetic local tests are available. The source is
-published at [graiola/garmin-connect-mcp](https://github.com/graiola/garmin-connect-mcp).
-The maintainer reported a successful local `doctor` check on November 5, 2026
-(authentication and one activity read); this was not independently repeated here.
-A live agent/MCP, Secure MCP Tunnel or Agensi connection remains unverified.
-Never provide your Garmin API key in chat or commit it to the repository.
+**Free, MIT-licensed, and self-hosted.** You supply one Garmin Personal API key;
+the connector manages Garmin's temporary access tokens automatically. Never paste
+your key into chat, an agent configuration, or the repository.
+
+## Quick start (Linux/macOS)
+
+### 1. Create your Garmin key
+
+In [Garmin Connect Web](https://connect.garmin.com/), open **Profile & Account →
+Account Settings → Personal API Key → Create Key**. Review Garmin's terms, choose
+an expiry, and keep the key private: Garmin displays it only once.
+See the [official instructions](https://developer.garmin.com/gc-developer-program/personal/personal-api/).
+Already have a working key on this machine? Reuse it; no need to create another.
+
+### 2. Install and run guided setup
+
+With [uv](https://docs.astral.sh/uv/getting-started/installation/) and Git installed,
+run these commands in **your own terminal**:
+
+```bash
+uv tool install --python 3.12 git+https://github.com/graiola/garmin-connect-mcp.git
+garmin-connect-mcp setup
+```
+
+uv manages the isolated environment and downloads Python 3.12 if needed; you do
+not need to change your system Python or activate a virtual environment. If the
+command is not found, follow uv's PATH instructions (`uv tool update-shell`, then
+open a new terminal). This installs from this repository, not a same-name PyPI entry.
+
+`setup` asks for the key with hidden input, checks Garmin authentication and one
+activity read, then saves a valid new key outside the repository with restricted
+permissions. It reuses an existing configured key when run again. It prints no
+key or activity records and creates no HTTP token for the normal local connection.
+
+Already installed from a clone, or prefer plain Python? See
+[installation and updates](docs/SETUP.md#installation-and-updates).
+
+### 3. Connect your local AI client
+
+Setup prints a configuration containing the actual Python path and a **path to**
+the key file, never the key. Merge its `garmin` entry into your client's local MCP
+settings, preserving existing servers. To print it again or choose another format:
+
+| Client/configuration | Command |
+|---|---|
+| Claude Code / Cursor (`mcpServers` JSON) | `garmin-connect-mcp client-config` |
+| VS Code (`servers` JSON) | `garmin-connect-mcp client-config --format vscode` |
+| Codex (`config.toml`) | `garmin-connect-mcp client-config --format codex` |
+
+Follow the [client-specific locations](docs/SETUP.md#local-client-settings), approve
+the server in your client, then ask: **"Show my three latest Garmin activities."**
+Compare one result with Garmin Connect. The local client starts the server for
+you; no separate `stdio` terminal or public port is needed. The configuration
+belongs on the same machine as the connector and key.
+
+**Using ChatGPT in a browser instead?** A local JSON configuration is not enough.
+Follow the separate [private ChatGPT connection guide](docs/CHATGPT.md). That route
+requires a supported account/workspace and an OpenAI Secure MCP Tunnel; its
+runtime key is separate from the Garmin key.
+
+Setup verifies Garmin access, **not** the AI-client connection. Installing the
+companion skill from Agensi does not perform either connection step.
 
 ## Available tools
 
@@ -36,82 +92,22 @@ connector does not decode FIT files or fabricate missing data. Compare one of yo
 own strength sessions against Garmin Connect before relying on it instead of a
 detailed export. Loads on different machines are not automatically comparable.
 
-## Install (Linux/macOS)
+## Key renewal and troubleshooting
 
-Requires Python 3.11+ and HTTPS access to Garmin. From the repository root:
-
-```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install -e '.[dev]'
-python -m pytest -q
-```
-
-`requirements-tested.txt` records the versions used in the original local tests.
-It is not a cross-platform lockfile; CI checks the declared dependency ranges.
-
-## Configure credentials locally
+Temporary Garmin access tokens are renewed automatically while your Personal API
+key is valid. When that key expires or is revoked, create a replacement in Garmin
+Connect and run this in your own terminal:
 
 ```bash
-garmin-connect-mcp configure
-garmin-connect-mcp doctor
+garmin-connect-mcp setup --replace-key
 ```
 
-`configure` securely prompts for your **Garmin Personal API key** without echoing
-it and creates two files outside the repository:
+A failed check does not replace the previous key. Restart the connector through
+your client after a successful replacement. To check the current key without
+changing it, run `garmin-connect-mcp doctor`.
 
-- `~/.config/garmin-connect-mcp/api-key`: your Garmin key.
-- `~/.config/garmin-connect-mcp/http-token`: an independent random token for local HTTP.
-
-Files use `0600` permissions on POSIX systems. Secret values are never printed.
-`doctor` checks authentication and performs one activity read, reporting only
-the outcome—not the activity data. If it fails, **do not paste the key into chat**.
-
-Secret-manager alternatives are `GARMIN_PERSONAL_API_KEY` and
-`GARMIN_PERSONAL_API_KEY_FILE` (the explicit file takes precedence).
-`GARMIN_MCP_ACCESS_TOKEN` and `GARMIN_MCP_ACCESS_TOKEN_FILE` instead secure
-access to the connector's local HTTP server. Do not reuse the Garmin key as the
-MCP bearer token. `.env` files are not loaded automatically.
-
-## Connect to ChatGPT
-
-**GitHub hosts the source, not a running MCP server.** You need a machine running
-the connector when you request data and a supported connection method for your
-ChatGPT account.
-
-The recommended approach is an authenticated **Secure MCP Tunnel**. Your Garmin
-key stays on your own host, rather than being exposed through a public HTTP
-endpoint. This requires a `tunnel_id`, an independent OpenAI runtime key, and the
-appropriate account/workspace permissions; availability for your account has not
-been verified.
-
-See the complete [ChatGPT connection guide](docs/CHATGPT.md).
-
-```bash
-# After installing the official tunnel-client and creating your private tunnel:
-./scripts/tunnel_stdio.sh tunnel_YOUR_ID
-```
-
-The script prompts locally for the OpenAI tunnel runtime key unless it is already
-in the environment. **This is not the Garmin API key.** It then configures,
-checks, and runs the tunnel in the foreground. In ChatGPT, use
-**Plugins → + → Add custom MCP server → Connection: Tunnel**.
-
-For a local MCP/Codex client, run the stdio transport directly:
-
-```bash
-/path/to/garmin-connect-mcp/.venv/bin/garmin-connect-mcp stdio
-```
-
-To test local HTTP instead:
-
-```bash
-garmin-connect-mcp http --port 8765
-```
-
-It listens **only** on `127.0.0.1` and requires the independent bearer token.
-Never expose this mode through an unauthenticated public HTTP tunnel. It is not
-an OAuth authorization server.
+See [setup and troubleshooting](docs/SETUP.md) for environment/secret-manager
+overrides, timezones, optional HTTP, and developer installation.
 
 ## Repository and security
 
@@ -179,3 +175,8 @@ See the [launch guide](docs/agensi/LAUNCH.md),
 
 Verify at least one activity against Garmin Connect. Passing local mocked tests
 does **not** prove real data accuracy or compatibility with your ChatGPT account.
+
+**Verification status:** the maintainer reported a successful local `doctor` on
+November 5, 2026 (authentication and one activity read). This was not independently
+repeated here. The version 0.2.0 onboarding has synthetic regression tests; live
+AI-client, Secure MCP Tunnel, and Agensi acceptance remain separate checks.

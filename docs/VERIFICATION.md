@@ -1,5 +1,45 @@
 # Verification record
 
+## Simplified onboarding — November 6, 2026
+
+Version 0.2.0 adds guided local setup and configuration export; it does not add
+Garmin data endpoints, new remote permissions, OAuth, or public hosting.
+
+- Python 3.12.14 / Linux, using the existing isolated project test environment.
+- Full combined suite: **241 passed**. This includes the previous 164 tests,
+  66 onboarding unit cases, ten independent subprocess cases, and one package
+  version consistency check.
+- New coverage: first setup, idempotent reuse, explicit source precedence,
+  environment-only credentials, hidden-input failure/cancellation, probe-before-save,
+  failed-rotation preservation, exclusive/atomic publication, target-change checks,
+  private permissions, source overrides, sanitized filesystem errors, and HTTP
+  credentials excluded from stdio/setup/doctor.
+- All three generated formats (common JSON, VS Code JSON, Codex TOML) were parsed
+  and used to launch actual stdio subprocesses for initialization, six-tool
+  discovery, and local status. Child DNS and outbound sockets were blocked, with
+  only synthetic key files and a minimal allowlisted environment.
+- Independent checks found and fixed version drift in MCP initialization/status
+  and TOML escaping for DEL. Tests also cover spaces, quotes, non-BMP Unicode,
+  preservation of the virtualenv interpreter path, and rejection of undecodable
+  filename bytes. These are process-level checks, not actual client-app acceptance.
+- `python -m compileall -q src scripts`, shell syntax checks, and `git diff --check`
+  passed. The six tool schemas still match the unchanged distribution snapshot.
+- The updated companion passed the skill validator. A fresh-context exercise
+  explained Ubuntu/Python 3.10 onboarding, Cursor configuration, automatic token
+  renewal versus key expiry, and the separate browser-ChatGPT tunnel prerequisite
+  without installing software or collecting credentials.
+- Package validation and two independent builds passed and produced identical
+  bytes. Version 0.2.0 upload archive: **32,518 bytes**, SHA-256
+  `b241bc15b8e4fe90caf4699171b558700d8bff2ec11c0a58139a003a1e38c663`.
+- An isolated **offline** uv installation was attempted locally, but could not
+  resolve `httpx` because its package was not cached. This was not a completed
+  clean installation. CI now includes an isolated uv install from the checkout
+  using Python 3.12, CLI version output, and all three configuration formats;
+  check the matching GitHub Actions run for its actual execution result.
+- No live credentials or Garmin responses were accessed. No client settings,
+  private tunnel, or Agensi account/listing were created or changed. Real-account
+  and client-specific acceptance remain the owner's checks below.
+
 ## Agensi companion preparation — November 5, 2026
 
 - Python 3.12.14 / Linux, using the existing isolated project test environment.
@@ -105,7 +145,7 @@ the published contract. The project does not require an MCP SDK at runtime.
 ## Local host acceptance checklist
 
 1. Install dependencies and rerun all tests.
-2. Run `configure` locally, then `doctor`; do not paste the key into chat.
+2. Run `setup` locally; it includes the `doctor` check. Never paste the key into chat.
 3. Fetch one representative activity and compare to Garmin Connect.
 4. Check the associated-workouts response; do not assume executed sets are present.
 5. Verify weight units, a date range, and one empty-data case.

@@ -25,7 +25,7 @@ background monitor or autonomous coach. The skill itself makes no network calls.
    Do not assume that the server's default `Europe/Rome` is the user's timezone.
    Resolve a material timezone mismatch before comparing calendar periods.
 4. Remember that status is local-only: `garmin_authenticated: not_checked` is not
-   successful authentication. The local `doctor` command tests Garmin authentication
+   successful authentication. Local `setup` and `doctor` test Garmin authentication
    and one activity read, but not an agent/MCP connection or all endpoints.
 5. Limit reads to the data and period the user requested. For an unspecified
    recent-activity request, start with three activities. Do not fetch wellness data
@@ -92,7 +92,7 @@ reference; the connected tool's advertised schema is authoritative.
 ## Protect the user's information
 
 Never ask the user to paste a Garmin key, password, cookie, token or secret file
-into chat. Keep credential entry in the user's own terminal using `configure`.
+into chat. Keep credential entry in the user's own terminal using `setup`.
 Do not inspect credential files, environment values or authorization headers.
 Do not send Garmin measurements, activity records or credentials to Agensi search,
 feedback, submission tools, external URLs or another person. Use only the skill's

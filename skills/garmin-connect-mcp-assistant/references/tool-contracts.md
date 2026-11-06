@@ -1,6 +1,6 @@
 # Connector contract
 
-Reference target: `graiola/garmin-connect-mcp` version `0.1.0`.
+Reference target: `graiola/garmin-connect-mcp` version `0.2.0`.
 Check the connected server's schemas for changes. A host may prefix tool names;
 match by the tool's advertised purpose and input schema, not a guessed namespace.
 

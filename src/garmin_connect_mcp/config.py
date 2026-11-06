@@ -8,18 +8,22 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from .errors import ConfigurationError
 
 DEFAULT_DIR = Path.home() / ".config" / "garmin-connect-mcp"
+API_KEY_ENV = "GARMIN_PERSONAL_API_KEY"
+API_KEY_FILE_ENV = "GARMIN_PERSONAL_API_KEY_FILE"
+HTTP_TOKEN_ENV = "GARMIN_MCP_ACCESS_TOKEN"
+HTTP_TOKEN_FILE_ENV = "GARMIN_MCP_ACCESS_TOKEN_FILE"
 
 
 def read_secret(path: Path) -> str:
-    path = path.expanduser()
     try:
+        path = path.expanduser()
         info = path.stat()
         if not stat.S_ISREG(info.st_mode) or info.st_size > 16384:
             raise ConfigurationError("Secret file must be a small regular file.")
         if os.name == "posix" and info.st_mode & 0o077:
             raise ConfigurationError("Secret file permissions are too broad. Use chmod 600 locally.")
         value = path.read_text(encoding="utf-8").strip()
-    except (OSError, UnicodeError):
+    except (OSError, UnicodeError, RuntimeError):
         raise ConfigurationError("Cannot read the configured secret file.") from None
     return validate_secret(value)
 
@@ -39,8 +43,25 @@ def find_secret(env_name: str, file_env: str, default: Path, *, required: bool =
     if default.exists():
         return read_secret(default)
     if required:
-        raise ConfigurationError("Garmin API key missing. Run garmin-connect-mcp configure locally.")
+        raise ConfigurationError("Garmin API key missing. Run garmin-connect-mcp setup in your own terminal.")
     return None
+
+
+def validate_timezone(value: str) -> str:
+    try:
+        ZoneInfo(value)
+    except (ZoneInfoNotFoundError, ValueError):
+        raise ConfigurationError("Unknown timezone; use an IANA timezone such as Europe/Rome.") from None
+    return value
+
+
+def validate_http_token(value: str, api_key: str | None = None) -> str:
+    token = validate_secret(value)
+    if len(token) < 32:
+        raise ConfigurationError("HTTP access token must contain at least 32 characters.")
+    if token == api_key:
+        raise ConfigurationError("The HTTP token must be different from the Garmin API key.")
+    return token
 
 
 @dataclass(frozen=True)
@@ -54,22 +75,16 @@ class Settings:
     def __post_init__(self) -> None:
         validate_secret(self.api_key)
         if self.access_token is not None:
-            validate_secret(self.access_token)
-            if len(self.access_token) < 32:
-                raise ConfigurationError("HTTP access token must contain at least 32 characters.")
-            if self.access_token == self.api_key:
-                raise ConfigurationError("The HTTP token must be different from the Garmin API key.")
+            validate_http_token(self.access_token, self.api_key)
         if not 0 < self.timeout_seconds <= 60:
             raise ConfigurationError("Timeout must be between 0 and 60 seconds.")
-        try:
-            ZoneInfo(self.timezone)
-        except (ZoneInfoNotFoundError, ValueError):
-            raise ConfigurationError("Unknown timezone; use an IANA timezone such as Europe/Rome.") from None
+        validate_timezone(self.timezone)
 
     @classmethod
-    def load(cls) -> Settings:
+    def load(cls, *, include_http: bool = True) -> Settings:
         return cls(
-            api_key=find_secret("GARMIN_PERSONAL_API_KEY", "GARMIN_PERSONAL_API_KEY_FILE", DEFAULT_DIR / "api-key"),
-            access_token=find_secret("GARMIN_MCP_ACCESS_TOKEN", "GARMIN_MCP_ACCESS_TOKEN_FILE", DEFAULT_DIR / "http-token", required=False),
+            api_key=find_secret(API_KEY_ENV, API_KEY_FILE_ENV, DEFAULT_DIR / "api-key"),
+            access_token=(find_secret(HTTP_TOKEN_ENV, HTTP_TOKEN_FILE_ENV, DEFAULT_DIR / "http-token", required=False)
+                          if include_http else None),
             timezone=os.environ.get("GARMIN_MCP_TIMEZONE", "Europe/Rome"),
         )

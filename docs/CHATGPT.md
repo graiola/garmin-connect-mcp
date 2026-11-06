@@ -1,7 +1,11 @@
 # Private ChatGPT connection
 
-Checked against official OpenAI documentation on November 5, 2026. This guide
+Checked against official OpenAI documentation on November 6, 2026. This guide
 does **not** confirm that your particular plan/workspace offers these features.
+
+For a local Claude Code, Cursor, VS Code, or Codex client, you do **not** need a
+tunnel or an OpenAI key: use [the local client settings](SETUP.md#local-client-settings).
+This guide is the additional step for connecting a private host to ChatGPT.
 
 ## Check the prerequisites first
 
@@ -22,17 +26,16 @@ HTTP tunnel to sensitive health data.
 
 ## 1. Verify the connector on your own host
 
-Install it as described in the README, then run:
+Install it using [the quick start](../README.md#quick-start-linuxmacos), then run:
 
 ```bash
-source .venv/bin/activate
-garmin-connect-mcp configure
-garmin-connect-mcp doctor
+garmin-connect-mcp setup
 ```
 
-`configure` prompts for the Garmin key using hidden input. `doctor` performs
-a real read and reports only success/failure. This does **not** connect ChatGPT
-yet. Your key file stays outside the repository.
+`setup` reuses your existing Garmin key or prompts privately for a new one, then
+checks authentication and one read without printing records. It manages Garmin's
+temporary access tokens automatically. This does **not** connect ChatGPT yet.
+For this tunnel route, you do not need to paste the local JSON setup prints.
 
 ## 2. Prepare the official tunnel
 
@@ -45,28 +48,21 @@ Give the runtime key only the permissions it needs, not general admin access.
 
 Download `tunnel-client` from Platform's official link or from the
 [official releases](https://github.com/openai/tunnel-client/releases/latest).
-On your host, check `tunnel-client help quickstart`. After creating the tunnel:
-
-```bash
-./scripts/tunnel_stdio.sh tunnel_YOUR_ID
-```
-
-The script configures a `garmin-personal` profile, checks it with `doctor`,
-and stays in the foreground with `run`. The OpenAI key is entered locally
-without echoing and is neither printed nor persisted by the script. The
-connector inherits Garmin-related environment variables or reads the external
-file created by `configure`.
-
-Equivalent manual setup:
+On your host, check `tunnel-client help quickstart` and
+`command -v garmin-connect-mcp`. The connector must be on that terminal's PATH.
+For a clone installation, first activate its `.venv`; for uv, use the PATH from
+the completed quick start. In your own **Bash terminal**, enter the OpenAI runtime
+key with hidden input and configure the profile once:
 
 ```bash
 # Read the runtime key securely without placing it in shell history.
-read -rs -p 'OpenAI tunnel runtime key: ' CONTROL_PLANE_API_KEY; echo
+read -rs -p 'OpenAI tunnel runtime key (NOT Garmin, hidden): ' CONTROL_PLANE_API_KEY
+printf '\n'
 export CONTROL_PLANE_API_KEY
 
 tunnel-client init --sample sample_mcp_stdio_local \
   --profile garmin-personal --tunnel-id tunnel_YOUR_ID \
-  --mcp-command '/path/to/garmin-connect-mcp/.venv/bin/garmin-connect-mcp stdio'
+  --mcp-command 'garmin-connect-mcp stdio'
 tunnel-client doctor --profile garmin-personal --explain
 tunnel-client run --profile garmin-personal
 ```
@@ -74,7 +70,14 @@ tunnel-client run --profile garmin-personal
 Do not repeat `init` on an existing profile without reviewing it. To restart
 an already configured profile, use `tunnel-client run --profile garmin-personal`
 with the runtime key available in the environment. Persisting and rotating
-that key through systemd or a secret manager is the host operator's responsibility.
+that key through systemd or a secret manager is the host operator's responsibility;
+the launch environment must also contain the connector's executable on PATH.
+Keep `run` in the foreground while adding/testing the ChatGPT connection. The
+connector reads the same private Garmin key file; there is no HTTP bearer involved.
+
+For an editable clone installed in `.venv`, `./scripts/tunnel_stdio.sh tunnel_YOUR_ID`
+remains a first-time helper for the same init/doctor/run sequence. It is not needed
+for the uv installation and is not a substitute for account/workspace permission.
 
 ## 3. Add the server in ChatGPT
 
@@ -103,21 +106,13 @@ The connection is complete **only after a successful tool call from ChatGPT**.
 Until then, distinguish between tested code, a Garmin `doctor` check, a running
 tunnel, a registered plugin, and a successful ChatGPT call.
 
-## Official references
+## Other transports and official references
 
-- https://help.openai.com/en/articles/12584461-connecting-custom-mcp-servers-in-chatgpt
-- https://developers.openai.com/plugins/deploy/connect-chatgpt
-- https://developers.openai.com/api/docs/guides/secure-mcp-tunnels
-- https://github.com/openai/tunnel-client/blob/master/docs/onboarding.md
+The [local HTTP option](SETUP.md#optional-local-http) is for explicit development
+or compatible local HTTP clients. It does not turn this project into an OAuth
+service or public endpoint. Prefer stdio for the private tunnel above.
 
-## Local HTTP mode (development alternative)
-
-`garmin-connect-mcp http` serves `/mcp` at `127.0.0.1:8765`, with a separate
-bearer token, Host validation, browser Origin rejection, and stateless JSON
-responses. It does not offer OAuth or a public endpoint. `/healthz` checks
-only the process, not Garmin authentication.
-
-A local MCP HTTP client may send the Authorization header using the `http-token`
-file via a secret manager. Do not paste that token into a URL or chat. For the
-ChatGPT tunnel, the stdio option above avoids additional HTTP configuration
-and remains the recommended route.
+- [Secure MCP Tunnel](https://developers.openai.com/api/docs/guides/secure-mcp-tunnels)
+- [Add custom MCP server](https://developers.openai.com/api/docs/guides/custom-mcp-server)
+- [Connect and test](https://developers.openai.com/plugins/deploy/connect-chatgpt)
+- [Tunnel-client onboarding](https://github.com/openai/tunnel-client/blob/master/docs/onboarding.md)

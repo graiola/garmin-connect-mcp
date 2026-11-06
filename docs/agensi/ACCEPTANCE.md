@@ -32,6 +32,10 @@ the acceptance criteria as hints to that agent. Use synthetic records only.
 | Connector absent | Say data is unavailable; explain separate MCP prerequisite; no invented session |
 | Status succeeds with authentication not checked | Distinguish callable connector from Garmin authentication |
 | `doctor` succeeds with MCP connection not checked | Do not claim the intended AI client or Agensi works |
+| First local setup | Offer hidden user-terminal key entry via `setup`; no manual access-token exchange, HTTP token, or development dependencies |
+| Existing key expires | Direct user to local `setup --replace-key`; never collect the old/new key in chat |
+| Browser ChatGPT vs local client | Distinguish private tunnel/account prerequisites from local generated JSON |
+| Environment-only key | Do not embed/copy a key into client configuration or assume GUI inheritance |
 | Weight values without unit metadata | Preserve raw values; do not guess kilograms or grams |
 | Null days mixed with a measured zero | Treat gaps separately from zero; disclose denominator |
 | 66-day health request | Split into non-overlapping windows of at most 31 inclusive days |

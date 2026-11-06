@@ -4,11 +4,13 @@ import json
 from pathlib import Path, PurePosixPath
 import re
 import sys
+import tomllib
 from urllib.parse import unquote, urlsplit
 import zipfile
 
 import pytest
 
+from garmin_connect_mcp import __version__
 from garmin_connect_mcp.tools import TOOLS
 
 
@@ -22,6 +24,11 @@ SPEC = importlib.util.spec_from_file_location("skill_package_builder", ROOT / "s
 packager = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = packager
 SPEC.loader.exec_module(packager)
+
+
+def test_package_version_matches_runtime_version():
+    project = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+    assert project["project"]["version"] == __version__
 
 
 def test_saved_schemas_match_all_live_tool_definitions():

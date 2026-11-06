@@ -2,71 +2,56 @@
 from __future__ import annotations
 import argparse
 import asyncio
-import getpass
 import json
 import logging
-import os
-from pathlib import Path
-import secrets
 import sys
+from . import __version__
 from .client import GarminClient
-from .config import DEFAULT_DIR, Settings, validate_secret
+from .config import Settings
 from .errors import ConfigurationError, ConnectorError
+from .onboarding import check_connection, client_config, configure, configure_http, setup, write_secret
 from .server import create_app, serve_stdio
 from .tools import ToolService
 
 
-def write_secret(path: Path, value: str) -> None:
-    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
-    if os.name == "posix":
-        path.parent.chmod(0o700)
-    # Refuse existing targets/symlinks rather than overwriting a possibly wrong secret.
-    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-    with os.fdopen(fd, "w", encoding="utf-8") as stream:
-        stream.write(value + "\n")
-
-
-def configure() -> None:
-    if not sys.stdin.isatty():
-        raise ConfigurationError("Run configure in your own interactive terminal; no secrets on stdin/pipes.")
-    key_path = DEFAULT_DIR / "api-key"
-    if key_path.exists():
-        raise ConfigurationError("API-key file already exists; replace it locally in a secure editor, keeping permissions 600.")
-    key = validate_secret(getpass.getpass("Garmin Personal API key (hidden): "))
-    write_secret(key_path, key)
-    token_path = DEFAULT_DIR / "http-token"
-    if not token_path.exists():
-        write_secret(token_path, secrets.token_urlsafe(48))
-    print(f"Secrets saved outside the repository in {DEFAULT_DIR}. Values not printed.")
-
-
 async def doctor(settings: Settings) -> None:
-    client = GarminClient(settings)
-    try:
-        # A read probe only. Never print the user's activity list in diagnostics.
-        await client.get("/activitylist-service/activities/search/activities", {"start": 0, "limit": 1})
-        print(json.dumps({"garmin_authentication": "ok", "activities_read": "ok", "mcp_connection": "not_checked"}))
-    finally:
-        await client.aclose()
+    print(json.dumps(await check_connection(settings)))
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Read-only Garmin Personal API MCP connector.")
-    parser.add_argument("command", nargs="?", choices=["stdio", "http", "configure", "doctor", "tools"], default="stdio")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
+    parser.add_argument("command", nargs="?", choices=["stdio", "http", "setup", "client-config", "configure", "configure-http", "doctor", "tools"], default="stdio")
     parser.add_argument("--port", type=int, default=8765, help="Loopback HTTP port only.")
+    parser.add_argument("--replace-key", action="store_true", help="For setup: check and atomically replace the default key file.")
+    parser.add_argument("--format", choices=["json", "vscode", "codex"], default=None, help="For client-config: settings format (default: json).")
     args = parser.parse_args()
+    if args.replace_key and args.command != "setup":
+        parser.error("--replace-key is only available with setup.")
+    if args.format is not None and args.command != "client-config":
+        parser.error("--format is only available with client-config.")
     logging.basicConfig(level=logging.WARNING, stream=sys.stderr)
     for name in ("httpx", "httpcore"):
         logging.getLogger(name).setLevel(logging.ERROR)
     try:
+        if args.command == "setup":
+            asyncio.run(setup(replace_key=args.replace_key))
+            return
+        if args.command == "client-config":
+            print(client_config(args.format or "json"))
+            return
         if args.command == "configure":
             configure()
+            return
+        if args.command == "configure-http":
+            configure_http()
+            print("Local HTTP token ready. Secret values were not printed; no Garmin request was made.")
             return
         if args.command == "tools":
             from .tools import TOOLS
             print(json.dumps([t.definition() for t in TOOLS], indent=2))
             return
-        settings = Settings.load()
+        settings = Settings.load(include_http=args.command == "http")
         if args.command == "doctor":
             asyncio.run(doctor(settings))
             return
@@ -78,12 +63,18 @@ def main() -> None:
                         access_log=False, log_level="warning", proxy_headers=False)
         else:
             asyncio.run(serve_stdio(ToolService(GarminClient(settings))))
-    except (ConnectorError, FileExistsError) as exc:
-        message = str(exc) if isinstance(exc, ConnectorError) else "Secret file already exists; it was not overwritten."
+    except (ConnectorError, OSError) as exc:
+        if isinstance(exc, ConnectorError):
+            message = str(exc)
+        elif isinstance(exc, FileExistsError):
+            message = "Secret file already exists; it was not overwritten."
+        else:
+            message = "Cannot access local configuration safely. Check directory permissions in your own terminal."
         print(message, file=sys.stderr)
         raise SystemExit(1) from None
     except KeyboardInterrupt:
-        pass
+        print("Cancelled.", file=sys.stderr)
+        raise SystemExit(130) from None
 
 
 if __name__ == "__main__":

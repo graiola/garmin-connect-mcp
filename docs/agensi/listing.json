@@ -1,7 +1,7 @@
 {
   "skill_name": "garmin-connect-mcp-assistant",
   "name": "Garmin Connect MCP Assistant",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "price_model": "free",
   "summary": "Explore your Garmin activities and wellness trends with a read-only AI companion. Compare sessions, preserve units and flag missing data. Requires your own configured Garmin Connect MCP server; no account access or hosting is included.",
   "categories": ["Productivity", "Data & Databases", "APIs & Backend"],

@@ -54,7 +54,7 @@ async def serve_stdio(service: ToolService) -> None:
 def create_app(service: ToolService) -> Starlette:
     token = service.client.settings.access_token
     if token is None:
-        raise ConfigurationError("Local HTTP requires a separate access token. Run configure first, or use stdio.")
+        raise ConfigurationError("Local HTTP requires a separate access token. Run garmin-connect-mcp configure-http first, or use stdio.")
     protocol = Protocol(service)
 
     @asynccontextmanager

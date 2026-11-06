@@ -18,7 +18,7 @@ does not prove Garmin authentication; `/healthz` explicitly reports not_checked.
 
 ## Credentials
 
-Use `configure` in a private local terminal or an environment/file secret manager.
+Use `setup` in a private local terminal or an environment/file secret manager.
 Never commit key files, `.env`, captures, Garmin exports or OAuth headers. Do not
 put secrets in command arguments, URLs, issues or chat. Secret files must be regular,
 small, and owner-only on POSIX; Windows users must restrict ACLs themselves.

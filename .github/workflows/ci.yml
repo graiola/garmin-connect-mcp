@@ -19,6 +19,18 @@ jobs:
       - run: python -m pip install -e '.[dev]'
       - run: python -m compileall -q src
       - run: python -m pytest -q
+      - name: Smoke-test isolated uv installation
+        if: matrix.python == '3.11'
+        env:
+          UV_TOOL_DIR: ${{ runner.temp }}/garmin-uv-tools
+          UV_TOOL_BIN_DIR: ${{ runner.temp }}/garmin-uv-bin
+        run: |
+          python -m pip install uv
+          uv tool install --python 3.12 .
+          "$UV_TOOL_BIN_DIR/garmin-connect-mcp" --version
+          "$UV_TOOL_BIN_DIR/garmin-connect-mcp" client-config
+          "$UV_TOOL_BIN_DIR/garmin-connect-mcp" client-config --format vscode
+          "$UV_TOOL_BIN_DIR/garmin-connect-mcp" client-config --format codex
       - run: bash -n scripts/publish_github.sh scripts/tunnel_stdio.sh
       - run: python scripts/build_agensi_package.py --check
       - run: python scripts/build_agensi_package.py
