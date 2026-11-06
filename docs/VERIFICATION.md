@@ -36,6 +36,11 @@ Garmin data endpoints, new remote permissions, OAuth, or public hosting.
   clean installation. CI now includes an isolated uv install from the checkout
   using Python 3.12, CLI version output, and all three configuration formats;
   check the matching GitHub Actions run for its actual execution result.
+- Publication [CI run 42195513838](https://github.com/graiola/garmin-connect-mcp/actions/runs/42195513838)
+  for source commit `0bd870c230a63366486f3cb8fd550ed50a79a3b5` subsequently passed
+  on Python 3.11 and 3.13. Its isolated uv/Python 3.12 installation and all three
+  installed CLI configuration exports passed as well. The Agensi bundle upload
+  succeeded. This verifies installation from the checkout, not a live Garmin call.
 - No live credentials or Garmin responses were accessed. No client settings,
   private tunnel, or Agensi account/listing were created or changed. Real-account
   and client-specific acceptance remain the owner's checks below.
